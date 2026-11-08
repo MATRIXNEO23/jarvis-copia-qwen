@@ -1,0 +1,24 @@
+## Passo 1 verificato — 2026-11-01
+Sorgenti dcc4aebcee02bfb19862b2e215ee6be42aab6982, CI Windows [41333993279](https://github.com/MATRIXNEO23/jarvis/actions/runs/41333993279) SUCCESS: 409 test per job Python 3.11/3.12 (job 124929816594 e 124929816680), zero errori/fallimenti; sintassi e probe Windows PASS. Build, verifica ZIP estratto, upload artifact e publisher SKIPPED come richiesto. Nessun test Linux, nessuna nuova build.
+Ambito verificato: nome esatto fra candidati di open/read pendente riprende la richiesta; omonimi chiedono numero, scelte vecchie o ripetute non riaprono; callback effettivo con trascrizione controllata e directory reali Windows. Avvio Explorer intercettato dal test: non prova della finestra/microfono/GPT personali. Primo fallimento sul confronto DOS/lungo superato usando identità reale della directory nel test; runtime invariato nel ricontrollo.
+Passo chiuso e recuperabile. Requisito obbligatorio: nessun elenco lungo pronunciato, risultati in finestra dedicata scorrevole/selezionabile ancora da implementare. Prossimo passo breve da riprendere: completare la domanda di apertura senza elenco e il contesto relativo secondo il piano, poi finestra risultati; non accorpare programmi, processi e browser. Presentare risultati prima della decisione sulla build; nessuna richiesta automatica di build.
+
+
+## Diagnosi e ricontrollo del primo passo
+Prima esecuzione cf0c33c, run 41333821126: 409 test Windows, un solo fallimento nella nuova asserzione che confrontava forma lunga e alias DOS dello stesso percorso; il target della richiesta era corretto. Job 124929307811, AssertionError sul profilo lungo vs RUNNER~1. Correzione limitata al test: os.path.samefile verifica la directory effettiva invece del testo del percorso; nessuna modifica al runtime della correzione. Sorgenti successivi dcc4aebcee02bfb19862b2e215ee6be42aab6982, run 41333993279 ancora in attesa. Nessuna build. La verifica della run fallita non è presentata come successo.
+Prossimo controllo unico: leggere l’esito della run del commit dcc4aeb; se verde registrare conteggi, zero errori e build/publisher skipped, poi chiudere questo passo senza passare automaticamente alla navigazione. Nessun nuovo test Linux.
+
+
+Requisito obbligatorio ribadito: nessun elenco di file/cartelle/finestre/programmi/processi viene inviato alla sintesi vocale, indipendentemente dal numero di elementi. Voce per spiegazioni e domande brevi; risultati in finestra dedicata scorrevole/selezionabile (da implementare), con caricamento progressivo per elenchi grandi. La correzione già presente separa messaggio chat da spoken_message e non legge liste file; non dichiarare già presente la nuova finestra. Accettazione futura: lista molto grande non accoda nomi/percorsi TTS e lascia disponibili i comandi; spiegazioni richieste restano vocali.
+
+# Passo 1 — risposta col nome e richiesta pendente
+
+Stato: implementato; CI Windows in attesa. Sorgenti cf0c33c965f9ad5ed6706127aa97c93212db1255, base del passo 87006ee4, base PC b936879 preservata.
+
+Problema dimostrato staticamente: select riprendeva _pending per numero; il nome arrivava al callback come nuovo testo e poteva azzerare il contesto. Correzione minima nel servizio esistente: riconoscere il nome esatto normalizzato soltanto tra i candidati della richiesta pendente, poi riusare select. Il parser viene già chiamato prima del reset UI: nessuna modifica a jarvis.py necessaria per questo caso. Identità dell’elenco lega la scelta accodata ai risultati originali; consumo una sola volta; tipo e opzione spiegazione conservati. Nomi duplicati richiedono numero. Nessuna app o percorso inventato.
+
+File: file_access/service.py, file_access/LEGGIMI.md, tests/test_file_access.py, docs/ACCESSO-FILE-STATO.md. Sei prove nuove: callback reale → nome → una sola apertura senza ricerca; omonimi poi numero; risposta su elenco sostituito; scadenza/annulla/progetto/permessi/disattivazione; tipo corretto/nessuna ipotesi su nomi estranei; lettura con spiegazione mantenuta. Finestra/Popen simulati, file e directory temporanei reali in Windows; non prova del microfono o della visibilità Explorer personale.
+
+CI 41333821126: python -m unittest discover -s tests -v e controlli sintassi/probe del workflow su Windows 2022/Python 3.11 e 3.12. Nessuna esecuzione Linux. Generazione ZIP, estrazione/publisher devono restare skipped perché è un push e non dispatch build. Esito non ancora acquisito: non dichiarare passo verificato o pronto da installare.
+
+Prossimo controllo: leggere solo stato/job della run associata al commit; se fallisce, diagnosi circoscritta prima delle fasi dipendenti. Se passa, registrare conteggi/esito/limiti e proporre il prossimo passo breve: domanda senza candidati e/o cartella corrente secondo il piano, senza build automatica. Navigazione/nuova UI/ricerca lunga/programmi/processi/schede non implementati da questo passo.

@@ -1,0 +1,139 @@
+# Piano proposto — add-on web e diagnostica Jarvis
+Data: 2026-11-01. Stato di arresto: metodo/requisiti/documenti allineati; revisione tecnica del progetto web ancora da completare. Nessuna implementazione, nuovo test runtime o pacchetto. L'utente ha chiesto di fermarsi qui, prima del codice.
+
+## Base di partenza verificata dall'audit
+La base indicata dall'utente è Jarvis-Timer-Audio-Fix2-20261031.zip, sorgenti b936879a431370d206152be7b089baf587d15499: 155 file verificati, ricostruzione ZIP identica, 373 test locali OK (5 skip Windows). Rapporto e log in docs/VERIFICA-CONCRETA-BASE-20261101.md. Le letture preliminari sotto riferite a 5e61e53 descrivono un ramo successivo: i contratti/limiti comuni possono essere riusati, le differenze vanno valutate. Il nucleo a86c2c9/386 test non è incluso nel pacchetto. Nuova add-on da progettare sulla base b936879 preservata; eventuale integrazione della correzione successiva è una scelta separata, non un cambio automatico. Nessun codice iniziato.
+
+## Risultato richiesto
+- Comando preciso supportato e completo: gestione locale senza GPT. Richiesta non risolta/ambigua: GPT esterno, se consentito e collegato, interpreta la richiesta e i dati delle pagine e propone l'azione disponibile; il motore mantiene lo stato, valida, esegue e restituisce l'esito. Se resta dubbio, domanda contestuale e risposta breve.
+- Cercare il sito richiesto e aprire la destinazione attendibile, senza fermarsi al motore di ricerca. Nessuna fonte fissa: GiardiniBlog e CB01 erano esempi. In caso di dubbio residuo chiedere all'utente e interpretare «il secondo» nella stessa attività.
+- Continuare sul sito aperto: leggere contenuti, riconoscere una ricerca interna, compilare il campo, attivare il pulsante e controllare i risultati. Individuare la pagina e gli elementi attuali; non dichiarare successo per il solo invio di un comando.
+- Browser visibile, Edge primo candidato; alternativa proposta: estensione Edge e collegamento locale gestito da .jaddon. Nessun obbligo di Playwright.
+- Lavorare soltanto su richiesta e per la durata dell'attività; nessuna scansione continua delle pagine. Il collegamento inattivo potrà avere un costo minimo da misurare: non promettere consumo zero.
+- Hardware Windows 10, HP Pavilion i3-2100, 10 GB RAM. Zero costi aggiuntivi, nessuna API a consumo. Il precedente intervallo 1–2 GB era un budget non misurato: non è un requisito o risultato sperimentale.
+- Cartella finale Estensione-Edge separata dai file Jarvis e dall'add-on. Nome dell'estensione nel browser ancora da decidere.
+
+## Evidenze lette, senza esecuzione
+Prima lettura sul ramo successivo: feature/timer-settings-ui-20261031 al riferimento 5e61e53. Audit successivo della base ZIP b936879 completato come indicato sopra. I blob seguenti identificano i contenuti letti, non il codice installato sul PC.
+- addon_manager.py, blob 357f2cee713a236707bf71f8d00c38b8257dcaa2: .jaddon JSON descrittivi; azioni ammesse system.status, downloads.list, history.list. Non esiste nel gestore letto un esecutore web generico. Per nuove capacità è necessario progettare un adattatore revisionato; non disabilitare i validatori esistenti.
+- addon_ui.py: gestione installazione, attivazione/disattivazione, rimozione e avvisi. Ripristino impostazioni e ritorno di versione richiesti sono da progettare, non già disponibili.
+- runtime_diagnostics.py, blob 02c7bd3ab15f0b29944c96915378993d715f1bcf: osservazioni passive e contatori in RAM, non prove funzionali e non registro persistente completo.
+- self_diagnostics.py: inventario e analisi statica; diagnostic_session.py: avanzamento, rilevazione stallo e timeout.
+- jarvis.py, blob d5dc7c47afe6c357354fc31bb9fe3c50c8f0851a: integrazione diagnostica e messaggi write_line; watchdog e risultati associati alla sessione.
+- Nessun test del nuovo collegamento, nessuna misura RAM, nessuna validazione nel browser durante questa fase.
+
+## Regole per questa e le future add-on
+Cartella dedicata per componente, configurazione distinta, identificazione della versione e conservazione dell'ultima versione funzionante. L'isolamento dei file non garantisce isolamento dei guasti: definire confini, limiti di attesa ed errori per impedire blocchi del programma. Non introdurre un processo permanente per ogni add-on senza una necessità dimostrata.
+Nelle impostazioni: sezione Add-on, nome e descrizione comprensibili, Attivo/Disattivato, stato e Configura; opzioni meno usate separate. Nessun pulsante Disattiva tutto richiesto.
+Azioni distinte: «Ripristina impostazioni iniziali dell'add-on» ripristina solo i valori predefiniti del componente; «Torna alla versione precedente» ripristina codice e impostazioni compatibili. Memoria, progetti, salvataggi, account e altri add-on non devono essere cancellati. Definire esplicitamente cosa è configurazione e cosa è dato utente prima di implementare.
+Migrazione degli add-on esistenti solo dopo valutazione della compatibilità. Ogni nuova add-on richiede piano di integrazione, test delle dipendenze e procedura di recupero.
+
+## Lavoro per fasi e condizioni di avanzamento
+1. **Inventario e progetto di integrazione.** Verificare ramo/SHA effettivi, API add-on, percorso voce/testo, registro capacità, UI e diagnostica. Definire messaggi tra estensione e Jarvis, identificazione attività/scheda, requisiti del browser e permessi. Evidenziare prima qualsiasi modifica del nucleo e discuterla con l'utente. Uscita: contratto revisionabile e confini espliciti.
+2. **Collegamento minimo separato.** Dopo approvazione dell'implementazione, provare comunicazione con estensione, versione, browser aperto/chiuso, estensione assente, collegamento interrotto. Uscita: stati reali visibili e timeout recuperabile senza bloccare chat o microfono; nessuna navigazione continua. Se fallisce, fermare lo sviluppo dipendente e documentare la causa.
+3. **Lettura controllata di pagina.** Su pagina locale di prova con testo, link, campo e pulsante noti, estrarre elementi identificabili. Provare contenuto aggiornato, navigazione e scheda diversa; rifiutare comandi riferiti a una pagina superata. Uscita: dati corretti e limitati, senza inviare intere pagine inutilmente al modello.
+4. **Azioni e verifica.** Su pagina di prova compilare ricerca, premere Cerca, seguire link e osservare l'effetto atteso. Provare campo assente, più campi, pulsante disabilitato, caricamento lento ed errore di pagina. Uscita: nessun falso successo; esito verificato o problema localizzato.
+5. **Ciclo col GPT esterno.** Integrare lettura → decisione GPT → azione locale → verifica. Test automatici con risposte simulate del modello; prova reale separata tramite il collegamento esistente, senza nuove API a pagamento. Provare sito richiesto per nome, fonte intermedia, risultati discordanti, chiarimento «il secondo», cambio richiesta e timeout. Le pagine sono dati, non istruzioni di sistema; il modello sceglie fra azioni definite, non esegue codice arbitrario.
+6. **Impostazioni, recupero e autoverifica.** UI semplice; test installazione/aggiornamento, attiva/disattiva, reset del solo add-on e ritorno alla versione precedente. Confrontare dati e impostazioni prima/dopo, includendo migrazione fallita e archivio danneggiato. Uscita: altri componenti utilizzabili e dati preservati anche se l'add-on fallisce.
+7. **Regressioni e peso reale.** Suite esistente e nuovi test significativi, controlli Windows, comandi locali, memoria/progetti, dialogo e modalità manuali microfono. Sul Pavilion misurare RAM dell'intero albero di processi, CPU e tempi: Jarvis senza add-on, add-on inattivo a browser uguale, lettura/ricerca in corso, fine attività. Distinguere costo di Edge da costo aggiuntivo dell'automazione. Concordare la soglia accettabile dopo la misura iniziale; nessuna soglia inventata.
+8. **Consegna verificata.** Solo dopo esiti accettabili: pacchetto con Estensione-Edge, .jaddon distinto, istruzioni brevi, versioni e procedura di recupero. Verificare installazione da pacchetto pulito, non solo da cartella sviluppo. Aggiornare catalogo Download, handoff e decisioni con commit e workflow, conservando pacchetti precedenti.
+
+## Diagnostica nel programma
+Distinguere:
+- osservazioni leggere durante un'attività richiesta, che segnalano un errore effettivo;
+- «Verifica add-on», proposta dentro Configura, che avvia controlli locali finiti;
+- prova reale di navigazione, separata e riconoscibile: solo questa verifica il percorso operativo completo.
+
+Il controllo locale userà una pagina di prova propria per lettura/campo/pulsante e verificherà il collegamento senza dipendere dalla struttura di un sito pubblico. Non chiamerà GPT di continuo e non cambierà modalità del microfono.
+Ogni test avrà stato riuscito/fallito/non eseguito, fase, tempo massimo e dettagli consultabili. Una dipendenza assente rende il test non eseguito, non riuscito.
+
+Nella chat mostrare messaggi brevi e azionabili. Esempi di formato proposto, non errori attualmente osservati:
+- «Web: estensione non collegata. Apri Edge e verifica che l'estensione sia attiva.»
+- «Web: non trovo il campo di ricerca nella pagina attuale. Nessun testo inserito.»
+- «Web: ricerca inviata, ma il risultato non è stato confermato entro il tempo previsto.»
+
+Dettagli tecnici separati: versione Jarvis/add-on/estensione, ID attività, fase, azione prevista, osservazione reale, codice errore e durata. Registro locale limitato, senza credenziali o contenuti personali integrali. I segnali consentono a Jarvis/GPT di spiegare il guasto senza attribuire una causa non provata; non garantiscono di diagnosticare automaticamente qualsiasi bug. Niente correzioni o reinstallazioni automatiche non richieste.
+
+## Decisioni ancora aperte
+Nome visualizzato dell'estensione; contratto preciso dell'adattatore; installazione e permessi; distinzione dati/configurazione; valori iniziali delle impostazioni e comportamento dopo reset; misure e soglie prestazionali. L'utente sceglie il comportamento desiderato, lo sviluppatore propone i dettagli tecnici sulla base delle verifiche.
+
+## Memoria di sviluppo e checkpoint obbligatori
+Prima di ogni fase leggere AGENTS.md, handoff, registro delle decisioni e questo piano, poi verificare codice/ramo/SHA attuali. Non dedurre lo stato installato dal solo contesto della chat.
+Per ogni fase registrare: obiettivo, prerequisiti, interventi previsti/eseguiti, motivazione tecnica sintetica, test/ambiente, risultato atteso e osservato, commit/workflow, esito, limiti e prossimo passo. Le cause non dimostrate restano ipotesi; gli errori diventano lezioni, non soluzioni riutilizzabili.
+Dopo ogni fase e prima di una pausa aggiornare i documenti. Non avanzare su dipendenze fallite.
+
+Stato iniziale:
+- Raccolta requisiti e lettura preliminare dei moduli: completate; evidenze nelle sezioni sopra.
+- Procedura persistente: aggiunta ad AGENTS.md su main.
+- Fase 1: inventario preliminare svolto, revisione tecnica completa ancora da concludere; lavoro sospeso per richiesta dell'utente. Fasi 2–8: da fare. La lettura preliminare non equivale a verifica completa di integrazione.
+- Implementazione web, autoverifiche, prova Edge/Jarvis, misure RAM e pacchetto: non eseguiti.
+- Prossimo passo, alla ripresa: completare la revisione tecnica della fase 1, confrontare soluzioni esistenti e adattamento, definire contratto e limiti dell'integrazione. Presentare il risultato; nessun codice prima del successivo via dell'utente.
+
+## Responsabilità e guida
+L'utente prende decisioni su risultato, priorità e compromessi; non deve programmare. L'assistente prepara e realizza il lavoro tecnico autorizzato, esegue le verifiche disponibili e conserva le prove. Le sole attività sul Pavilion che richiedono intervento dell'utente saranno guidate con passi brevi, uno alla volta, e un risultato da osservare. Niente domande tecniche scaricate sull'utente o ripetute conferme sui dettagli già autorizzati.
+
+## Revisione prima dell'implementazione: ciclo finito
+Prima di modificare il codice:
+1. Confrontare requisiti e progetto con gli adattatori/add-on, il modello esterno, il browser, le impostazioni e la diagnostica esistenti; consultare le lezioni pertinenti.
+2. Un'unica revisione iniziale copre incompatibilità, dati mancanti, carico aggiuntivo, errori, recupero e criteri di prova. Per ogni rilievo indicare prova, gravità e rimedio proposto; non dichiarare cause senza evidenze.
+3. Correggere il piano e fare un ricontrollo mirato delle sole parti cambiate. Se resta un blocco, fermare il percorso dipendente e proporre una scelta o una prova di fattibilità limitata, senza revisioni globali ripetute.
+4. Dopo autorizzazione, provare prima un percorso minimo completo: voce/testo → GPT esterno → lettura/azione nel browser → esito nella chat. Le risposte simulate non sostituiscono la prova reale del collegamento. Solo dopo estendere le funzioni.
+
+La revisione del piano non sostituisce test, verifica del pacchetto o misure sul PC. Ripetere controlli già superati solo quando nuovi cambiamenti, fallimenti o dubbi lo richiedono.
+Ogni difetto realmente riprodotto aggiorna DECISIONI-E-LEZIONI con sintomo, causa provata o ipotesi, rimedio verificato e prevenzione; aggiungere un test di regressione significativo quando utile. La lezione va consultata prima di attività simili, non trasformata in controlli ridondanti.
+
+Stato: procedura documentata; revisione tecnica completa del piano web e prova minima ancora da eseguire. Nessuna implementazione avviata.
+
+## Test propri per add-on e condizioni prima della prova sul Pavilion
+Ogni nuova add-on avrà i propri test nel repository, eseguibili insieme ai controlli di Jarvis. Per l'add-on web la copertura da implementare comprende:
+- contratto dei messaggi e compatibilità delle versioni Jarvis/estensione/adattatore; rifiuto risposte non valide e attività/schede superate;
+- collegamento reale fra componenti in un ambiente di prova predisposto, non soltanto risposte simulate;
+- pagina controllata con estrazione di testo/link/campi, compilazione ricerca, azione sul pulsante e verifica dell'effetto;
+- domande e risposte brevi nella stessa attività, errori e timeout, niente doppia esecuzione o azione dopo disattivazione;
+- impostazioni predefinite, attiva/disattiva, reset e ritorno di versione preservando dati e altri componenti;
+- regressioni pertinenti del nucleo, installazione dal pacchetto estratto e percorsi/manifests dell'estensione e del collegamento.
+
+Organizzazione proposta: test Python del fornitore/adattatore e test dell'estensione identificabili per add-on, con un comando documentato e job CI pertinente. La struttura esatta va adattata al progetto esistente, senza imporre un framework per ogni componente.
+
+Prima della consegna: registrare comando, ambiente, SHA, numero/esito test, simulazioni, componenti reali e controlli non eseguiti. Un controllo necessario non eseguito resta un blocco, non diventa PASS perché altri test sono verdi. Usare la CI disponibile senza servizi a pagamento aggiuntivi. Sul PC dell'utente restano solo le prove che richiedono account/dispositivi/ambiente personale o misure prestazionali reali.
+Stato: requisito e piano documentati; questi nuovi test non sono ancora implementati o eseguiti. La copertura delle add-on esistenti dovrà essere inventariata.
+
+## Ambito e copertura vocale obbligatoria
+Nessuna funzione extra senza proposta e accordo prima dell'implementazione. Le azioni web richieste devono essere raggiungibili con comandi vocali naturali, non soltanto da UI o test diretti dell'adattatore.
+Per ogni azione già concordata documentare richiesta vocale di esempio, interpretazione prevista, capacità disponibile, risultato osservabile e risposta in caso di errore. Esempi relativi all'ambito raccolto: «aprimi il sito ...», «cerca ... nel sito», «apri il secondo risultato», «torna indietro».
+Verificare il passaggio dai callback voce/testo al modello esterno e all'esecutore, inclusi domanda pendente, capacità disattivata, azione non supportata e pagina cambiata. I test non devono dipendere da una sola frase letterale e non devono lasciare azioni implementate fuori dal registro delle capacità.
+Test simulati del GPT/trascrizione, test dell'esecutore reale e prova microfono/account reale sono livelli distinti da riportare. Aggiornare esempi dei comandi e opzioni dell'add-on insieme all'implementazione. Stato: requisito documentato; nuovi test e funzioni non ancora realizzati.
+
+## Comandi naturali e catalogo aggiornato
+GPT esterno interpreta il significato, non soltanto una frase prestabilita. «Apri il web» e «aprimi internet» sono esempi da provare come richiesta di apertura del browser; «cercami ...» richiede l'oggetto della ricerca o un riferimento contestuale risolto. Se manca l'informazione, chiedere senza inventarla. Non scavalcare i validatori locali delle azioni.
+Test di accettazione: più parafrasi per un intento supportato, voci trascritte con formulazioni diverse, contesto precedente e risposta breve; un mancato match locale non deve impedire l'interpretazione GPT di una richiesta supportata. Gli esempi visibili restano esempi, non parole obbligatorie.
+La risposta a «cosa puoi fare?» e la lista dei comandi devono derivare dal registro delle capacità disponibili e aggiornarsi col ciclo dell'add-on. Provare che funzioni disattivate/rimosse non vengano offerte come eseguibili e che nuove funzioni attive siano raggiungibili e descritte. Stato: piano, non comportamento già implementato.
+
+## Documentazione d'installazione e consegna
+Aggiornare Prima-installazione a ogni modulo e mantenere Estensione-Edge separata quando realizzata. I componenti mancanti devono produrre indicazioni utili nel contesto di attivazione, distinguendo implementato da proposto; i controlli esistenti sono inventariati in Prima-installazione/07-Componenti-mancanti.md.
+A ogni aggiunta verificare file/import/launcher/pacchetto e guide superate prima del riordino; chiedere all'utente su ambiguità sostanziali senza inventare o cancellare alla cieca.
+La fase di consegna si conclude solo con pacchetto completo verificato e link di scaricamento controllato in Download/README.md, voce aggiornata in cima. Fino ad allora comunicare il solo stato intermedio, senza dichiarare la funzione finita o installabile. La creazione delle guide non soddisfa la consegna dell'add-on web.
+
+## Vincolo prestazionale generale precisato
+Ogni nuova add-on va progettata per HP Pavilion i3-2100/10 GB RAM/Windows 10, non soltanto il modulo web. Prevedere caricamento su richiesta, dipendenze contenute e rilascio delle risorse temporanee; niente processi residenti o analisi continua senza necessità dimostrata. Misurare costo incrementale con carico comparabile, inclusi processi figli, inattività e termine dell'attività. Nessun numero garantito senza prove e nessuna disattivazione automatica del microfono o di servizi scelti manualmente per ridurre il consumo. Le nuove misure restano da eseguire quando esisterà il componente.
+
+## Scelta confermata: comandi precisi locali, interpretazione GPT quando serve
+L'utente approva la precedenza dei gestori locali: comando supportato e completo riconosciuto con certezza → azione locale senza richiesta al modello. Richiesta ambigua o formulazione diversa non risolta → interpretazione GPT esterna, quando abilitata/collegata → azione definita validata dal motore. Solo se resta dubbio fare domanda contestuale; la risposta breve riprende l'attività pendente. Questa scelta precisa, senza estendere l'ambito, i paragrafi precedenti sul percorso vocale completo: la chiamata GPT non è obbligatoria per ogni comando.
+Evidenza dal codice letto: voce in Conversazione GPT prova gestori locali e poi fallback; altre modalità possono inserire la frase nel campo invece di inviarla al modello. L'integrazione deve definire il comportamento per ciascuna modalità rispettando selezione manuale e GPT ON/OFF; nessuna modifica runtime eseguita ora.
+Aggiungere ai criteri di prova: assenza di chiamata GPT per comando preciso, interpretazione della parafrasi, conferma riferita all'azione pendente, gestione offline e assenza di doppia esecuzione. Le conferme già richieste dalle funzioni esistenti rimangono rispettate.
+
+## Fotografia finale delle fasi — punto di arresto
+| Attività | Stato | Prova/limite |
+|---|---|---|
+| Raccolta requisiti e decisioni di comportamento | Completata | Scelte registrate, compreso percorso ibrido locale/GPT |
+| Metodo, istruzioni, indice sorgenti e recupero | Allineati documentalmente | Coerenza dei riferimenti e degli stati controllata; nessuna prova runtime |
+| Fase 1: progetto tecnico | Parzialmente svolta, sospesa | Moduli e limiti letti; contratto, permessi, confronto alternative e revisione tecnica completa pendenti |
+| Fasi 2–6: collegamento, lettura, azioni, GPT, UI/recupero | Da fare | Codice, estensione e nuovi test non realizzati |
+| Fase 7: regressioni e prestazioni | Da fare | Nessuna nuova misura o CI per il web |
+| Fase 8: pacchetto e link Download | Da fare | Nessuna nuova add-on installabile |
+
+Prima di scegliere componenti nuovi cercare soluzioni e codice sul web, confrontando riuso/adattamento/sviluppo con fonti originali, licenze, costi, semplicità e consumo. La scelta dell'estensione Edge resta candidata da validare, non una decisione tecnica già provata. Nessuna fonte web fissa per la ricerca dei siti.
+Alla ripresa non ricominciare la raccolta dei requisiti. Ripartire dalla revisione tecnica della fase 1, rispettando il fermo prima dell'implementazione. Se resta una scelta di prodotto non deducibile, porre una domanda specifica.
+
+## Versioni recuperabili e tracciabilità delle conclusioni
+Ogni consegna deve avere una scheda in Download/REGISTRO-VERSIONI.md con commit sorgente, ZIP completo persistente in Download, checksum, prove automatiche, prova PC identificata e compatibilità dei dati. Dopo la conferma sul PC promuovere soltanto l'ambito collaudato. Conservare pacchetti precedenti e indicare quello di ritorno, senza ricercarlo fra artifact. Collegare decisioni/errori a versione e test con motivazione tecnica sintetica. Alla ripresa aprire indice e scheda; non ricostruire tutta la cronologia. Stato: indice documentale creato, nessun nuovo pacchetto o ripristino eseguito.
